@@ -1,7 +1,8 @@
 from createTests import mcqexam
 
 filename = './test-1.tex'
-exam = mcqexam(filename, "Test-1: Calculus I")
+testname = "Test-1: Calculus I"
+exam = mcqexam(filename, testname)
 
 exam.add_question("What is the value of $\\int_0^1 x^2 dx$?")
 optns = [r"$\displaystyle\frac{1}{2}$", r"$\displaystyle\frac{1}{3}$", 

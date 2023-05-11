@@ -2,7 +2,7 @@ import numpy as np
 
 preamble = r"\documentclass[a4paper, 12pt]{article}"
 preamble += "\n"
-preamble += r"\usepackage[lmargin=2cm, rmargin=2cm, tmargin=2cm, bmargin=1cm]{geometry}"
+preamble += r"\usepackage[lmargin=1cm, rmargin=1cm, tmargin=2cm, bmargin=2cm]{geometry}"
 preamble += "\n"
 preamble += r"\usepackage{graphicx, amsmath, amsfonts, amssymb, tikz}"
 preamble += "\n"
@@ -53,12 +53,13 @@ class mcqexam:
                 temp += "\n"
                 j = 0
             else:
-                temp += "&"
+                temp += "\n&\n"
         
-        temp += (len(options)%optncols - j - 1)*"&"
-         
+        if len(options)%optncols!=0:
+            temp += (optncols - len(options)%optncols - 1)*"&\n"
+            
+        temp += "\n"
         temp += r"\end{tabularx}"
-        temp += r"\vspace{0.1cm}"
         
         self.options.append(temp)
 
@@ -74,8 +75,8 @@ class mcqexam:
         data_f.write(preamble)
         data_f.write(r"\begin{document}")
         data_f.write("\n\n")
-        data_f.write(r"\begin{center}\textbf{" + self.title + "}\end{center}")
-        data_f.write(r"\hrule\vspace{0.5cm}")
+        data_f.write(r"\begin{center}\textbf{" + self.title + r"}\end{center}")
+        data_f.write("\n" + r"\hrule\vspace{0.5cm}")
         
         for i in range(self.qnum):
             data_f.write(self.questions[i])
@@ -83,32 +84,44 @@ class mcqexam:
             data_f.write(self.options[i])
             data_f.write("\n")
             data_f.write(r"\vspace{0.1cm}")
-            data_f.write("\n\n")
+            data_f.write(r"\\" + "\n\n")
         
-        data_f.write(r"\vspace{0.5cm}\hrule\vspace{0.1cm}")
+        data_f.write(r"\vspace{0.5cm}\hrule\vspace{0.1cm}" + "\n")
         
         # Now we add answers
-        data_f.write(r"\begin{center}\textbf{Answers}\end{center}")
-        
+        data_f.write(r"\newpage\begin{center}\textbf{Answers}\end{center}" + "\n")
+        anscols = 8
+        data_f.write(r"\begin{tabularx}{\linewidth}{ *{"+str(anscols)+"}{X} }" + "\n")
+        k = 0
         for i in range(self.qnum):
+            k += 1 # changing column count
             data_f.write(str(i+1) + ".~")
             for j in range(len(self.answers[i])):
-                data_f.write( "(" + chr(64+self.answers[i][j]) + ")~" )
+                data_f.write( "(" + chr(64+self.answers[i][j]) + ")" )
+                if j!=len(self.answers[i])-1:
+                    data_f.write(",")
             
-            data_f.write(r"\qquad"+"\n")
-            
+            if k<anscols:
+                data_f.write("\n&\n") # this changes column
+            elif k==anscols and i!=self.qnum-1:
+                data_f.write(r"\\" + "\n")
+                k = 0
+        
+        if self.qnum%anscols != 0:
+            data_f.write((anscols-self.qnum%anscols-1)*"&\n")
+        
+        data_f.write("\n" + r"\end{tabularx}" + "\n")
+        
         # Finally we add solutions
         
-        data_f.write(r"\vspace{0.5cm}\hrule\vspace{0.1cm}")
-        data_f.write(r"\begin{center}\textbf{Solutions}\end{center}")
+        data_f.write("\n" + r"\vspace{0.5cm}\hrule\vspace{0.1cm}" + "\n")
+        data_f.write(r"\begin{center}\textbf{Solutions}\end{center}" + "\n")
         
         for i in range(self.qnum):
-            data_f.write(r"\noindent" + str(i+1) + ".~")
-            data_f.write(self.solutions[i] + r"\vspace{0.5cm}\\")
+            data_f.write(r"\noindent " + str(i+1) + ".~")
+            data_f.write(self.solutions[i])
+            data_f.write(r"\vspace{0.5cm}\\" + "\n")
         
-        data_f.write(r"\end{document}")
+        data_f.write("\n" + r"\end{document}" + "\n")
         data_f.close()
-    
-    def get_option(self, o):
-        return chr(65+o)
     
